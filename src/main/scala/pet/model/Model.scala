@@ -5,7 +5,8 @@ import net.scalax.simple.codec.LabelledInstalled.Named
 import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled}
 import net.scalax.simple.codec.generic.SimpleFromProduct
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
-import pet.generic.DtoNamed
+import pet.generic.{DtoNamed, SlickDescribe, SlickNamed}
+import slick.ast.TypedType
 
 case class Cat[IdM[_], F[_]](id: F[IdM[Long]], name: F[String], owner: F[String])
 
@@ -45,5 +46,21 @@ object Cat {
 
   given [IdM[_]](using Decoder[IdM[Long]]): Decoder[Cat[IdM, Id]] =
     CirceGeneric.decodeModelImpl(summon, summon, summon[DtoNamed[IDCat[IdM]]].labelled)
+
+  import slick.jdbc.MySQLProfile.api._
+
+  given [IdM[_]](using TypedType[IdM[Long]]): Cat[IdM, TypedType] = FillIdentity[IDCat[IdM], TypedType]
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type].generic)(_.generic)
+    .model(summon)
+
+  given [IdM[_]]: SlickNamed[IDCat[IdM]] = {
+    val lab = summon[LabelledInstalled[IDCat[IdM]]].labelled
+    SlickNamed[IDCat[IdM]].from(lab.copy(id = "id", name = "name", owner = "owner"))
+  }
+
+  given [IdM[_]]: SlickDescribe[IDCat[IdM]] = {
+    val lab = summon[LabelledInstalled[IDCat[IdM]]].labelled
+    SlickDescribe[IDCat[IdM]].from(lab.copy(id = "Database id.", name = "The name of the cat.", owner = "The owner of the cat."))
+  }
 
 }
