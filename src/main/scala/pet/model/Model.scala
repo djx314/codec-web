@@ -5,8 +5,10 @@ import net.scalax.simple.codec.LabelledInstalled.Named
 import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled}
 import net.scalax.simple.codec.generic.SimpleFromProduct
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
-import pet.generic.{DtoNamed, SlickDescribe, SlickNamed}
+import pet.generic.{DtoNamed, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep}
 import slick.ast.TypedType
+
+import slick.jdbc.MySQLProfile.api._
 
 case class Cat[IdM[_], F[_]](id: F[IdM[Long]], name: F[String], owner: F[String])
 
@@ -47,8 +49,6 @@ object Cat {
   given [IdM[_]](using Decoder[IdM[Long]]): Decoder[Cat[IdM, Id]] =
     CirceGeneric.decodeModelImpl(summon, summon, summon[DtoNamed[IDCat[IdM]]].labelled)
 
-  import slick.jdbc.MySQLProfile.api._
-
   given [IdM[_]](using TypedType[IdM[Long]]): Cat[IdM, TypedType] = FillIdentity[IDCat[IdM], TypedType]
     .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type].generic)(_.generic)
     .model(summon)
@@ -63,4 +63,25 @@ object Cat {
     SlickDescribe[IDCat[IdM]].from(lab.copy(id = "Database id.", name = "The name of the cat.", owner = "The owner of the cat."))
   }
 
+  given [IdM[_]]: SlickOptions[IDCat[IdM]] =
+    SlickOptions[IDCat[IdM]].from(_.copy(id = _.seq(_.AutoInc, _.PrimaryKey), name = _.seq(_.Unique)))
+
+  given [IdM[_]](using TypedType[IdM[Long]]): SlickTableRep[IDCat[IdM]] =
+    SlickTableRep[IDCat[IdM]].derived(summon, summon, summon, summon, summon)
+
+}
+
+class CatTable[IdM[_]](cons: Tag)(using TypedType[IdM[Long]], Shape[? <: FlatShapeLevel, Rep[IdM[Long]], IdM[Long], ?])
+    extends Table[Cat[IdM, Cat.Id]](cons, "cat") {
+  val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDCat[IdM]]].table(this)
+
+  override def * = Cat.simpleGeneric[IdM, Rep].generic.to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
+}
+
+object CatTable {
+  given [IdM[_]]: Conversion[CatTable[IdM], Cat[IdM, Rep]] = _.__tableRep
+}
+
+object CatTableQuery extends TableQuery[Table[Cat[Cat.Id, Cat.Id]]](cons => new CatTable[Cat.Id](cons)) {
+  object ForInsert extends TableQuery[Table[Cat[Option, Cat.Id]]](cons => new CatTable[Option](cons))
 }
