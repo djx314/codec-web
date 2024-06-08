@@ -17,23 +17,23 @@ object Cat {
   type IDCat[IdM[_]] = [F[_]] =>> Cat[IdM, F]
   type Id            = [t] =>> t
 
-  def simpleGeneric[IdM[_], I[_]] = SimpleFromProduct[IDCat[IdM], I].derived
+  def simpleGeneric[IdM[_], I[_]] = SimpleFromProduct[IDCat[IdM], I].derived.generic
 
   given [IdM[_]]: SimpleProduct.Appender[IDCat[IdM]] = new SimpleProduct.Appender.Impl[IDCat[IdM]] {
     override def impl[M1[_, _, _], M2[_], M3[_], M4[_]] = _.derived2(
-      simpleGeneric[IdM, Id].generic,
-      simpleGeneric[IdM, M2].generic,
-      simpleGeneric[IdM, M3].generic,
-      simpleGeneric[IdM, M4].generic
+      simpleGeneric[IdM, Id],
+      simpleGeneric[IdM, M2],
+      simpleGeneric[IdM, M3],
+      simpleGeneric[IdM, M4]
     )(_.generic)
   }
 
   given [IdM[_]](using Encoder[IdM[Long]]): Cat[IdM, Encoder] = FillIdentity[IDCat[IdM], Encoder]
-    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Encoder, DefaultModelImplement.type]#Type].generic)(_.generic)
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Encoder, DefaultModelImplement.type]#Type])(_.generic)
     .model(summon)
 
   given [IdM[_]](using Decoder[IdM[Long]]): Cat[IdM, Decoder] = FillIdentity[IDCat[IdM], Decoder]
-    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Decoder, DefaultModelImplement.type]#Type].generic)(_.generic)
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Decoder, DefaultModelImplement.type]#Type])(_.generic)
     .model(summon)
 
   given [IdM[_]]: LabelledInstalled[IDCat[IdM]] = LabelledInstalled[IDCat[IdM]].derived(summon, summon)
@@ -50,7 +50,7 @@ object Cat {
     CirceGeneric.decodeModelImpl(summon, summon, summon[DtoNamed[IDCat[IdM]]].labelled)
 
   given [IdM[_]](using TypedType[IdM[Long]]): Cat[IdM, TypedType] = FillIdentity[IDCat[IdM], TypedType]
-    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type].generic)(_.generic)
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type])(_.generic)
     .model(summon)
 
   given [IdM[_]]: SlickNamed[IDCat[IdM]] = {
@@ -75,7 +75,7 @@ class CatTable[IdM[_]](cons: Tag)(using TypedType[IdM[Long]], Shape[? <: FlatSha
     extends Table[Cat[IdM, Cat.Id]](cons, "cat") {
   val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDCat[IdM]]].table(this)
 
-  override def * = Cat.simpleGeneric[IdM, Rep].generic.to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
+  override def * = Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
 }
 
 object CatTable {
