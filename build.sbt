@@ -3,11 +3,15 @@ name         := "codec-web"
 
 scalafmtOnCompile := true
 
+val tapirVersion = "1.10.8"
 libraryDependencies += "net.scalax.simple" %% "simple-codec-slick" % "0.0.2-M16"
 libraryDependencies += "net.scalax.simple" %% "simple-codec-circe" % "0.0.2-M16"
+
 libraryDependencies ++= libScalax.`http4s-Release`.value
 libraryDependencies ++= libScalax.`http4s-Release-ember-server`.value
-libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % "1.10.8"
+
+libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirVersion
+libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-json-circe"    % tapirVersion
 
 scalacOptions ++= Seq("-Ykind-projector", "-experimental")
 

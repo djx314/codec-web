@@ -2,13 +2,14 @@ package pet.model
 
 import io.circe.{Decoder, Encoder}
 import net.scalax.simple.codec.LabelledInstalled.Named
-import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled}
-import net.scalax.simple.codec.generic.SimpleFromProduct
+import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled, MapGenerc}
+import net.scalax.simple.codec.generic.{SimpleFromProduct, SimpleFromTo}
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
-import pet.generic.{DtoNamed, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep}
+import pet.generic.{DtoNamed, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep, ToFieldName}
 import slick.ast.TypedType
-
-import slick.jdbc.MySQLProfile.api._
+import slick.jdbc.MySQLProfile.api.*
+import slick.lifted.ProvenShape
+import sttp.tapir.{FieldName, Schema}
 
 case class Cat[IdM[_], F[_]](id: F[IdM[Long]], name: F[String], owner: F[String])
 
@@ -69,13 +70,23 @@ object Cat {
   given [IdM[_]](using TypedType[IdM[Long]]): SlickTableRep[IDCat[IdM]] =
     SlickTableRep[IDCat[IdM]].derived(summon, summon, summon, summon, summon)
 
+  given [IdM[_]](using Schema[IdM[Long]]): Cat[IdM, Schema] = FillIdentity[IDCat[IdM], Schema]
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Schema, DefaultModelImplement.type]#Type])(_.generic)
+    .model(summon)
+
+  given [IdM[_]]: ToFieldName[IDCat[IdM]] = {
+    val name = summon[DtoNamed[IDCat[IdM]]].labelled
+    ToFieldName[IDCat[IdM]].derived(summon, name)
+  }
+
 }
 
 class CatTable[IdM[_]](cons: Tag)(using TypedType[IdM[Long]], Shape[? <: FlatShapeLevel, Rep[IdM[Long]], IdM[Long], ?])
     extends Table[Cat[IdM, Cat.Id]](cons, "cat") {
   val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDCat[IdM]]].table(this)
 
-  override def * = Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
+  override def * : ProvenShape[Cat[IdM, Cat.Id]] =
+    Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
 }
 
 object CatTable {
