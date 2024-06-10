@@ -88,7 +88,7 @@ class CatTable[IdM[_]](cons: Tag)(using TypedType[IdM[Long]], Shape[? <: FlatSha
   val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDCat[IdM]]].table(this)
 
   override def * : ProvenShape[Cat[IdM, Cat.Id]] =
-    Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.apply[IdM, Cat.Id].tupled, Cat.unapply[IdM, Cat.Id])
+    Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.simpleGeneric[IdM, Cat.Id].from, Cat.simpleGeneric[IdM, Cat.Id].to)
 }
 
 object CatTable {
