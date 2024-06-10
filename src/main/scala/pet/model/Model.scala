@@ -2,14 +2,14 @@ package pet.model
 
 import io.circe.{Decoder, Encoder}
 import net.scalax.simple.codec.LabelledInstalled.Named
-import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled, MapGenerc}
-import net.scalax.simple.codec.generic.{SimpleFromProduct, SimpleFromTo}
+import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled}
+import net.scalax.simple.codec.generic.SimpleFromProduct
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
-import pet.generic.{DtoNamed, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep, ToFieldName}
+import pet.generic.{DtoNamed, IndexModel, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep, ToFieldName}
 import slick.ast.TypedType
 import slick.jdbc.MySQLProfile.api.*
 import slick.lifted.ProvenShape
-import sttp.tapir.{FieldName, Schema}
+import sttp.tapir.Schema
 
 case class Cat[IdM[_], F[_]](id: F[IdM[Long]], name: F[String], owner: F[String])
 
@@ -78,6 +78,8 @@ object Cat {
     val name = summon[DtoNamed[IDCat[IdM]]].labelled
     ToFieldName[IDCat[IdM]].derived(summon, name)
   }
+
+  given [IdM[_]]: IndexModel[IDCat[IdM]] = IndexModel[IDCat[IdM]].derived(summon)
 
 }
 
