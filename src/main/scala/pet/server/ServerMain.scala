@@ -19,7 +19,7 @@ def countCharacters(s: String): IO[Either[Unit, Cat[Option, Id]]] =
   IO.pure(Right[Unit, Cat[Option, Id]](Cat[Option, Id](Option.empty, s, "Marry")))
 
 val countCharactersEndpoint: PublicEndpoint[String, Unit, Cat[Option, Id], Any] = {
-  endpoint.in("hello" / "cat").in(stringBody).out(jsonBody[Cat[Option, Id]])
+  endpoint.in("hello" / "cat").in(query[String]("name")).out(jsonBody[Cat[Option, Id]])
 }
 
 val swaggerRouterImpl = SwaggerInterpreter().fromEndpoints[IO](List(countCharactersEndpoint), "Cat App", "1.0")
