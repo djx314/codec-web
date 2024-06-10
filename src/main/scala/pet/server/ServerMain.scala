@@ -16,7 +16,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import com.comcast.ip4s._
 
 def countCharacters(s: String): IO[Either[Unit, Cat[Option, Id]]] =
-  IO.pure(Right[Unit, Cat[Option, Id]](Cat[Option, Id](Option.empty, "Tony", "Marry")))
+  IO.pure(Right[Unit, Cat[Option, Id]](Cat[Option, Id](Option.empty, s, "Marry")))
 
 val countCharactersEndpoint: PublicEndpoint[String, Unit, Cat[Option, Id], Any] = {
   endpoint.in("hello" / "cat").in(stringBody).out(jsonBody[Cat[Option, Id]])
@@ -32,14 +32,6 @@ val http4sRoutes: HttpRoutes[IO] = docRouter <+> countCharactersRoutes
 
 val server =
   EmberServerBuilder.default[IO].withHost(ipv4"0.0.0.0").withPort(port"8080").withHttpApp(http4sRoutes.orNotFound).build
-
-def main = {
-  println(implicitly[Schema[Cat[Option, Id]]])
-  println(implicitly[IndexModel[Cat.IDF[Option]]].model)
-
-  val getName = implicitly[GetFieldModel[Cat.IDF[Option]]].getFieldModel[Id]
-  println(getName.owner(Cat[Option, Id](Option.empty, "Tony", "Marry")))
-}
 
 object Main extends IOApp {
 
