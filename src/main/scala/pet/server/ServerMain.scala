@@ -26,7 +26,7 @@ val swaggerRouterImpl = SwaggerInterpreter().fromEndpoints[IO](List(countCharact
 
 val docRouter: HttpRoutes[IO] = Http4sServerInterpreter[IO]().toRoutes(swaggerRouterImpl)
 val countCharactersRoutes: HttpRoutes[IO] =
-  Http4sServerInterpreter[IO]().toRoutes(countCharactersEndpoint.serverLogic(countCharacters _))
+  Http4sServerInterpreter[IO]().toRoutes(countCharactersEndpoint.serverLogic(countCharacters))
 
 val http4sRoutes: HttpRoutes[IO] = docRouter <+> countCharactersRoutes
 
