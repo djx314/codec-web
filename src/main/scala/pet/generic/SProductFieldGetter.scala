@@ -14,19 +14,31 @@ trait SProductFieldGetter[F[_[_]]] {
 
 object SProductFieldGetter {
 
+  def merge[F[_[_]]](f1: F[Schema], f2: F[[_] =>> String], zipGeneric: ZipGeneric[F], mapGenerc: MapGenerc[F]): F[Schema] = {
+    val zipSchema = zipGeneric.zip(f1, f2)
+    val mapFunc = new MapGenerc.MapFunction[[t] =>> (Schema[t], String), Schema] {
+      override def map[X1]: ((Schema[X1], String)) => Schema[X1] = s => s._1.description(s._2)
+    }
+
+    mapGenerc.map(mapFunc)(zipSchema)
+  }
+
   class DerivedApply[F[_[_]]] {
 
     def derived(
       p: SimpleProduct.Appender[F],
       fieldName: ToFieldName[F],
       schema: F[Schema],
-      getFieldModel: GetFieldModel[F]
+      getFieldModel: GetFieldModel[F],
+      slickDescribe: SlickDescribe[F]
     ): SProductFieldGetter[F] = {
       val mapGeneric    = MapGenerc[F].derived(p)
       val zipGeneric    = ZipGeneric[F].derived(p)
       val toListGeneric = ToListByTheSameTypeGeneric[F].derived(p)
 
-      val zipModel = zipGeneric.zip(zipGeneric.zip(fieldName.model, schema), getFieldModel.getFieldModel[Id])
+      val schemaModel = merge(schema, slickDescribe.labelled, zipGeneric, mapGeneric)
+
+      val zipModel = zipGeneric.zip(zipGeneric.zip(fieldName.model, schemaModel), getFieldModel.getFieldModel[Id])
 
       val mapper = new MapGenerc.MapFunction[[t] =>> ((FieldName, Schema[t]), F[Id] => t), [t] =>> SProductField[F[Id]]] {
         def map[X1]: (((FieldName, Schema[X1]), F[Id] => X1)) => SProductField[F[Id]] = (t: ((FieldName, Schema[X1]), F[Id] => X1)) =>

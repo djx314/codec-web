@@ -10,8 +10,9 @@ libraryDependencies += "net.scalax.simple" %% "simple-codec-circe" % "0.0.2-M16"
 libraryDependencies ++= libScalax.`http4s-Release`.value
 libraryDependencies ++= libScalax.`http4s-Release-ember-server`.value
 
-libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirVersion
-libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-json-circe"    % tapirVersion
+libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion
+libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion
+libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion
 
 scalacOptions ++= Seq("-Ykind-projector", "-experimental")
 

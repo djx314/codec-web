@@ -72,7 +72,7 @@ object Cat {
 
   given [IdM[_]]: SlickDescribe[Cat.IDF[IdM]] = {
     val lab = summon[LabelledInstalled[Cat.IDF[IdM]]].labelled
-    SlickDescribe[Cat.IDF[IdM]].from(lab.copy(id = "Database id.", name = "The name of the cat.", owner = "The owner of the cat."))
+    SlickDescribe[Cat.IDF[IdM]].from(lab.copy(id = "数据库ID(被保护字段)", name = "猫猫的名字", owner = "猫猫的主人"))
   }
 
   given [IdM[_]]: SlickOptions[Cat.IDF[IdM]] =
@@ -95,7 +95,7 @@ object Cat {
   given [IdM[_]]: GetFieldModel[Cat.IDF[IdM]] = GetFieldModel[Cat.IDF[IdM]].derived(summon, summon)
 
   given [IdM[_]](using Schema[IdM[Long]]): SProductFieldGetter[Cat.IDF[IdM]] =
-    SProductFieldGetter[Cat.IDF[IdM]].derived(summon, summon, summon, summon)
+    SProductFieldGetter[Cat.IDF[IdM]].derived(summon, summon, summon, summon, summon)
 
   given [IdM[_]](using Schema[IdM[Long]]): Schema[Cat[IdM, Id]] =
     summon[SProductFieldGetter[Cat.IDF[IdM]]].objectSchema(SName("pet.model.Cat", Nil))
