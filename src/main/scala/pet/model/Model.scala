@@ -2,13 +2,13 @@ package pet.model
 
 import io.circe.{Decoder, Encoder}
 import net.scalax.simple.codec.LabelledInstalled.Named
-import net.scalax.simple.codec.{CirceGeneric, DefaultModelImplement, FillIdentity, LabelledInstalled}
+import net.scalax.simple.codec.{DefaultModelImplement, FillIdentity, IndexModel, LabelledInstalled}
 import net.scalax.simple.codec.generic.SimpleFromProduct
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
 import pet.generic.{
+  CirceGeneric,
   DtoNamed,
   GetFieldModel,
-  IndexModel,
   SProductFieldGetter,
   SlickDescribe,
   SlickNamed,
@@ -56,10 +56,10 @@ object Cat {
   }
 
   given [IdM[_]](using Encoder[IdM[Long]]): Encoder[Cat[IdM, Id]] =
-    CirceGeneric.encodeModelImpl(summon, summon, summon[DtoNamed[Cat.IDF[IdM]]].labelled)
+    CirceGeneric.encode(summon, summon, summon[DtoNamed[Cat.IDF[IdM]]].labelled)
 
   given [IdM[_]](using Decoder[IdM[Long]]): Decoder[Cat[IdM, Id]] =
-    CirceGeneric.decodeModelImpl(summon, summon, summon[DtoNamed[Cat.IDF[IdM]]].labelled)
+    CirceGeneric.decode(summon, summon, summon[DtoNamed[Cat.IDF[IdM]]].labelled)
 
   given [IdM[_]](using TypedType[IdM[Long]]): Cat[IdM, TypedType] = FillIdentity[Cat.IDF[IdM], TypedType]
     .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type])(_.generic)
@@ -104,7 +104,7 @@ object Cat {
 
 class CatTable[IdM[_]](cons: Tag)(using TypedType[IdM[Long]], Shape[? <: FlatShapeLevel, Rep[IdM[Long]], IdM[Long], ?])
     extends Table[Cat[IdM, Id]](cons, "cat") {
-  val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDF[IdM]]].table(this)
+  private val __tableRep: Cat[IdM, Rep] = summon[SlickTableRep[Cat.IDF[IdM]]].table(this)
 
   override def * : ProvenShape[Cat[IdM, Id]] =
     Cat.simpleGeneric[IdM, Rep].to(__tableRep) <> (Cat.simpleGeneric[IdM, Id].from, Cat.simpleGeneric[IdM, Id].to)

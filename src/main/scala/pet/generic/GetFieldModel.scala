@@ -1,6 +1,6 @@
 package pet.generic
 
-import net.scalax.simple.codec.MapGenerc
+import net.scalax.simple.codec.{IndexModel, MapGenerc}
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
 
 trait GetFieldModel[F[_[_]]] {

@@ -5,10 +5,8 @@ import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import cats.effect.*
 import org.http4s.*
-import org.http4s.dsl.io.*
 import org.http4s.implicits.*
 import cats.syntax.all.*
-import pet.generic.{GetFieldModel, IndexModel}
 import pet.model.Cat
 import sttp.tapir.json.circe.*
 import cats.Id
