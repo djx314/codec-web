@@ -1,6 +1,6 @@
 package pet.generic
 
-import net.scalax.simple.codec.{MapGenerc, ZipGeneric}
+import net.scalax.simple.codec.{GetFieldModel, MapGenerc, ZipGeneric}
 import net.scalax.simple.codec.to_list_generic.{SimpleProduct, ToListByTheSameTypeGeneric}
 import sttp.tapir.{FieldName, Schema}
 import sttp.tapir.SchemaType.{SProduct, SProductField}

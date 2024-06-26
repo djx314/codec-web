@@ -11,7 +11,7 @@ libraryDependencies ++= libScalax.`http4s-Release-ember-server`.value
 libraryDependencies ++= libScalax.`slick`.value
 libraryDependencies ++= libScalax.`slickless`.value
 
-libraryDependencies += "net.scalax.simple" %% "simple-codec" % "0.0.2-M18"
+libraryDependencies += "net.scalax.simple" %% "simple-codec" % "0.0.2-M19"
 
 libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"     % tapirVersion
 libraryDependencies += "com.softwaremill.sttp.tapir" %% "tapir-json-circe"        % tapirVersion

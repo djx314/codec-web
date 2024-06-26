@@ -2,7 +2,7 @@ package pet.model
 
 import io.circe.{Decoder, Encoder}
 import net.scalax.simple.codec.LabelledInstalled.Named
-import net.scalax.simple.codec.{DefaultModelImplement, GetFieldModel, IndexModel, LabelledInstalled}
+import net.scalax.simple.codec.{DefaultModelImplement, FillIdentity, GetFieldModel, IndexModel, LabelledInstalled}
 import net.scalax.simple.codec.generic.SimpleFromProduct
 import net.scalax.simple.codec.to_list_generic.SimpleProduct
 import pet.generic.{CirceGeneric, DtoNamed, SProductFieldGetter, SlickDescribe, SlickNamed, SlickOptions, SlickTableRep, ToFieldName}
@@ -30,9 +30,13 @@ object Cat {
     )(_.generic)
   }
 
-  given [IdM[_]](using Encoder[IdM[Long]]): Cat[IdM, Encoder] = Cat[IdM, Encoder](summon, summon, summon)
+  given [IdM[_]](using Encoder[IdM[Long]]): Cat[IdM, Encoder] = FillIdentity[Cat.IDF[IdM], Encoder]
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Encoder, DefaultModelImplement.type]#Type])(_.generic)
+    .model(summon)
 
-  given [IdM[_]](using Decoder[IdM[Long]]): Cat[IdM, Decoder] = Cat[IdM, Decoder](summon, summon, summon)
+  given [IdM[_]](using Decoder[IdM[Long]]): Cat[IdM, Decoder] = FillIdentity[Cat.IDF[IdM], Decoder]
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Decoder, DefaultModelImplement.type]#Type])(_.generic)
+    .model(summon)
 
   given [IdM[_]]: LabelledInstalled[Cat.IDF[IdM]] = LabelledInstalled[Cat.IDF[IdM]].derived(summon, summon)
 
@@ -47,7 +51,9 @@ object Cat {
   given [IdM[_]](using Decoder[IdM[Long]]): Decoder[Cat[IdM, Id]] =
     CirceGeneric.decode(summon, summon, summon[DtoNamed[Cat.IDF[IdM]]].labelled)
 
-  given Cat[Id, TypedType] = Cat[Id, TypedType](summon, summon, summon)
+  given Cat[Id, TypedType] = FillIdentity[Cat.IDF[Id], TypedType]
+    .derived2(simpleGeneric[Id, FillIdentity.WithPoly[TypedType, DefaultModelImplement.type]#Type])(_.generic)
+    .model(summon)
 
   given SlickNamed[Cat.IDF[Id]] = {
     val lab = summon[LabelledInstalled[Cat.IDF[Id]]].labelled
@@ -63,7 +69,9 @@ object Cat {
 
   given SlickTableRep[Cat.IDF[Id]] = SlickTableRep[Cat.IDF[Id]].derived(summon, summon, summon, summon, summon)
 
-  given [IdM[_]](using Schema[IdM[Long]]): Cat[IdM, Schema] = Cat[IdM, Schema](summon, summon, summon)
+  given [IdM[_]](using Schema[IdM[Long]]): Cat[IdM, Schema] = FillIdentity[Cat.IDF[IdM], Schema]
+    .derived2(simpleGeneric[IdM, FillIdentity.WithPoly[Schema, DefaultModelImplement.type]#Type])(_.generic)
+    .model(summon)
 
   given [IdM[_]]: ToFieldName[Cat.IDF[IdM]] = {
     val name = summon[DtoNamed[Cat.IDF[IdM]]].labelled
