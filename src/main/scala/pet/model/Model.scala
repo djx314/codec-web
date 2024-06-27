@@ -82,27 +82,26 @@ object Cat {
 
 }
 
-class CatTable(cons: Tag) extends Table[Cat[Id, Id]](cons, "cat") {
-  private val __tableRep: Cat[Id, Rep] = summon[SlickTableRep[Cat.IDF[Id]]].table(this)
+abstract class CatTable[IdM[_]](cons: Tag)(using sv: Shape[? <: FlatShapeLevel, Rep[IdM[Long]], IdM[Long], ?])
+    extends Table[Cat[IdM, Id]](cons, "cat") {
+  protected def idRep: Cat[Id, Rep] = summon[SlickTableRep[Cat.IDF[Id]]].table(this)
+  protected def adaptRep: Cat[IdM, Rep]
 
-  override def * : ProvenShape[Cat[Id, Id]] =
-    Cat.simpleGeneric[Id, Rep].to(__tableRep) <> (Cat.simpleGeneric[Id, Id].from, Cat.simpleGeneric[Id, Id].to)
+  override def * : ProvenShape[Cat[IdM, Id]] =
+    Cat.simpleGeneric[IdM, Rep].to(adaptRep) <> (Cat.simpleGeneric[IdM, Id].from, Cat.simpleGeneric[IdM, Id].to)
 }
 object CatTable {
-  given Conversion[CatTable, Cat[Id, Rep]] = _.__tableRep
+  given [IdM[_]]: Conversion[CatTable[IdM], Cat[Id, Rep]] = _.idRep
 }
 
-class CatTableOption(cons: Tag) extends Table[Cat[Option, Id]](cons, "cat") {
-  private val __tableRepImpl: Cat[Id, Rep] = summon[SlickTableRep[Cat.IDF[Id]]].table(this)
-  private val __tableRep: Cat[Option, Rep] = __tableRepImpl.copy(id = __tableRepImpl.id.?)
-
-  override def * : ProvenShape[Cat[Option, Id]] =
-    Cat.simpleGeneric[Option, Rep].to(__tableRep) <> (Cat.simpleGeneric[Option, Id].from, Cat.simpleGeneric[Option, Id].to)
-}
-object CatTableOption {
-  given Conversion[CatTableOption, Cat[Option, Rep]] = _.__tableRep
+class CatTableId(cons: Tag) extends CatTable[Id](cons) {
+  protected def adaptRep: Cat[Id, Rep] = idRep
 }
 
-object CatTableQuery extends TableQuery[CatTable](cons => new CatTable(cons)) {
-  object ForInsert extends TableQuery[CatTableOption](cons => new CatTableOption(cons))
+class CatTableOption(cons: Tag) extends CatTable[Option](cons) {
+  protected def adaptRep: Cat[Option, Rep] = idRep.copy(id = idRep.id.?)
+}
+
+object CatTableQuery extends TableQuery[CatTable[Id]](cons => new CatTableId(cons)) {
+  object ForInsert extends TableQuery[CatTable[Option]](cons => new CatTableOption(cons))
 }
